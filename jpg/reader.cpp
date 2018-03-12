@@ -1,6 +1,6 @@
 #include "reader.h"
 
-
+#include <istream>
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -24,7 +24,18 @@ SOSComponentDescriptor::SOSComponentDescriptor()
 SOS::SOS()
 {}
 
+reader::reader(const std::string &a):
+    pathFile(a),
+    _stream(pathFile.c_str(), std::ios::binary)
+{
+   // _stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
+}
+
+reader::~reader()
+{
+
+}
 
 void reader::skipAppMarkers()
 {
@@ -283,21 +294,6 @@ void reader::readDHT(std::vector<DHT> &dhts)
 
 }
 
-
-
-reader::reader(const std::string &a):
-    pathFile(a),
-    _stream(pathFile.c_str(), std::ios::binary)
-{
-    _stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-}
-
-reader::~reader()
-{
-
-}
-
 void reader::validateFile(istream &stream)
 {
     uint2 marker;
@@ -332,19 +328,20 @@ void reader::read()
 {
     this->readHeader();
     this->skipAppMarkers();
-    this->readDQT(this->_dqts);
+//    this->readDQT(this->_dqts);
 
 
-    this->readSOF0(this->_sof0);
-    this->readDHT(this->_dhts);
+//    this->readSOF0(this->_sof0);
+//    this->readDHT(this->_dhts);
 
-    this->readSOS(this->_sos);
+//    this->readSOS(this->_sos);
 
-
+    if(this->moveToMark(Markers::DRI))
+    {
+        std::cout<<"found";
+    }
 
 }
-
-
 
 void reader::readHeader()
 {
@@ -390,8 +387,6 @@ void reader::readHeader()
 
 }
 
-
-
 void reader::readTable()
 {
     uint2 twobytes = 0;
@@ -413,6 +408,37 @@ void reader::read2bytes(istream &stream, uint2 &outbytes)
 
 }
 
+bool reader::moveToMark(uint2 searchMarker)
+{
+    bool found = false;
+    unsigned char bytemarker[2];
+
+    while(_stream && _stream.read((char*)bytemarker, 2) && !found){
+
+        uint2 marker = ((int)(bytemarker[0]) << 8 ) + bytemarker[1];
+
+        if(marker == searchMarker){
+            found = true;
+        }else{
+            if(!Markers::isStandAlone(marker)){
+                uint2 ln = 0;
+
+                this->read2bytes(_stream, ln);
+                _stream.seekg( ln - 2, std::ios_base::cur);
+
+            }
+        }
+
+
+
+
+    }
+
+
+
+    return found;
+
+}
 
 
 

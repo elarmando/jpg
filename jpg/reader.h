@@ -122,6 +122,8 @@ private:
 
     void readDHT(DHT &dht, bool skipmarker = false);
     void readDHT(std::vector<DHT> &dht);
+    void readDRI();
+    bool moveToMark(uint2 marker );
 public:
     reader(const std::string &a);
     ~reader();

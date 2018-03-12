@@ -23,6 +23,17 @@ bool Markers::isMarker(uint2 marker)
 
 }
 
+bool Markers::isStandAlone(uint2 marker)
+{
+    if(Markers::TEM == marker ||
+       Markers::isRST(marker) ||
+       Markers::EOI == marker ||
+       Markers::SOI == marker)
+        return true;
+
+    return false;
+}
+
 }
 
 

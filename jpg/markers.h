@@ -15,11 +15,14 @@ public:
        const static uint2 DQT = 0xFFDB; //define quantization table
        const static uint2 SOF0 = 0xFFC0; //start of frame, baseline
        const static uint2 SOS = 0xFFDA;
+       const static uint2 DRI = 0xFFDD; //define restart interval
+       const static uint2 TEM = 0xFF01;
 
        static bool isAPP(uint2 marker);
        static bool isRST(uint2 marker);
 
        static bool isMarker(uint2 marker);
+       static bool isStandAlone(uint2 marker);
 };
 
 }
