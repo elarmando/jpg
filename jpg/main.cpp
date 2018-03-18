@@ -8,7 +8,7 @@ int main()
     jpg::reader reader("test.jpg");
     reader.read();
 
-    cout << "Hello World!" << endl;
+
     return 0;
 }
 

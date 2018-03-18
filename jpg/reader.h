@@ -68,8 +68,8 @@ class ComponentSOF{
 public:
     ComponentSOF();
     char identifier;
-    char horizontalSampling;
-    char verticalSampling;
+    unsigned char horizontalSampling;
+    unsigned char verticalSampling;
     char quantizationIdentifier;
 };
 
@@ -124,6 +124,9 @@ private:
     void readDHT(std::vector<DHT> &dht);
     void readDRI();
     bool moveToMark(uint2 marker );
+
+    void getMaxSampling(SOF0 &sos, unsigned char &horizontal, unsigned char &vertical);
+    void getNumMCU(SOF0 &sos, unsigned char mxSamplingX, unsigned char mxSamplingY, unsigned int &outMCUx, unsigned int &outMCUy);
 public:
     reader(const std::string &a);
     ~reader();
@@ -134,6 +137,7 @@ public:
 
     void readTable();
     void read2bytes(std::istream &, uint2 &outbytes);
+    void decode(SOF0 &sos );
 };
 
 

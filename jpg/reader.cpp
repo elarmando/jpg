@@ -154,8 +154,8 @@ void reader::readSOF0(SOF0 &sof0)
         _stream.read(&sampling, 1);
         _stream.read(&component.quantizationIdentifier, 1);
 
-        component.horizontalSampling = (sampling & 0xF0) >>4;
-        component.verticalSampling = (sampling & 0x0F);
+        component.horizontalSampling = (unsigned char)(sampling & 0xF0) >>4;
+        component.verticalSampling = (unsigned char)(sampling & 0x0F);
 
         _sof0.components.push_back(component);
 
@@ -212,7 +212,7 @@ void reader::readSOS(SOS &sos)
 
 
 
-    if(len > 0){
+    if(lenData > 0){
         sos.dataScan.resize(lenData);
 
         _stream.seekg(initilPos);
@@ -328,20 +328,94 @@ void reader::read()
 {
     this->readHeader();
     this->skipAppMarkers();
-//    this->readDQT(this->_dqts);
+    this->readDQT(this->_dqts);
 
 
-//    this->readSOF0(this->_sof0);
-//    this->readDHT(this->_dhts);
+    this->readSOF0(this->_sof0);
+    this->readDHT(this->_dhts);
 
-//    this->readSOS(this->_sos);
+    this->readSOS(this->_sos);
 
-    if(this->moveToMark(Markers::DRI))
-    {
-        std::cout<<"found";
+    uint2 nextMarker = 0;
+    read2bytes(this->_stream, nextMarker);
+
+    while(nextMarker != Markers::EOI){
+        this->readDHT(this->_dhts);
+
+        this->readSOS(this->_sos);
+
+         read2bytes(this->_stream, nextMarker);
     }
 
+
+
+
 }
+
+ void reader::decode(SOF0 &sos )
+ {
+     unsigned char maxSamplingH = 0;
+     unsigned char maxSamplingV = 0;
+     unsigned char numComponents = sos.components.size();
+     uint2 width = sos.width;
+     uint2 height = sos.height;
+
+    this->getMaxSampling(sos, maxSamplingH, maxSamplingV);
+
+    unsigned int numMCUx = 0;
+    unsigned int numMCUy = 0;
+
+    this->getNumMCU(sos, maxSamplingH, maxSamplingV, numMCUx, numMCUy);
+
+
+
+
+ }
+
+ void reader::getNumMCU(SOF0 &sos, unsigned char mxSamplingX, unsigned char mxSamplingY, unsigned int &outMCUx, unsigned int &outMCUy)
+ {
+     unsigned char numComponents = sos.components.size();
+     uint2 width = sos.width;
+     uint2 height = sos.height;
+
+
+     if(numComponents > 1)//is jpeg interleaved
+     {
+         outMCUx = (width  + 8 * mxSamplingX - 1) / ( 8 * mxSamplingX);
+         outMCUy = (height + 8 * mxSamplingY - 1) / (8 * mxSamplingY);
+     }
+     else
+     {
+         unsigned char cSamplingH = numComponents == 1 ? sos.components.at(0).horizontalSampling : 1;
+         unsigned char cSamplingV = numComponents == 1 ? sos.components.at(0).verticalSampling : 1;
+
+         unsigned int pixelsX = 8 * (mxSamplingX / cSamplingH);//si solo hay una componente max/c debe dar 1 y pixels es 8, para que usar otra formula del libro?
+         unsigned int pixelsY = 8 * (mxSamplingY / cSamplingV);
+
+         outMCUx = (width + pixelsX - 1) / pixelsX;
+         outMCUy = (height + pixelsY - 1) / pixelsY;
+
+     }
+
+ }
+
+ void reader::getMaxSampling(SOF0 &sos, unsigned char &horizontal, unsigned char &vertical)
+ {
+    horizontal = 0;
+    vertical = 0;
+
+    for(auto it = sos.components.begin(); it != sos.components.end(); ++it){
+        auto e = ( *it);
+
+        if(e.horizontalSampling > horizontal){
+            horizontal = e.horizontalSampling;
+        }
+
+        if(e.verticalSampling > vertical){
+            vertical = e.verticalSampling;
+        }
+    }
+ }
 
 void reader::readHeader()
 {
