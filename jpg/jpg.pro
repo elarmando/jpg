@@ -5,9 +5,11 @@ CONFIG -= qt
 
 SOURCES += main.cpp \
     markers.cpp \
-    reader.cpp
+    reader.cpp \
+    huffmancoding.cpp
 
 HEADERS += \
     markers.h \
-    reader.h
+    reader.h \
+    huffmancoding.h
 

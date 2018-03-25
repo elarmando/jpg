@@ -370,6 +370,35 @@ void reader::read()
 
 
 
+    //decode each data unit in the mcu, for each component
+    for(int colMCU = 0; colMCU < numMCUx; colMCU++){
+
+        for(int rowMCU = 0; rowMCU < numMCUy; rowMCU++){
+
+            for(auto it = sos.components.begin(); it != sos.components.end(); ++it)
+            {
+                auto component = (*it);
+                int samplingx = component.horizontalSampling;
+                int samplingy = component.verticalSampling;
+
+
+                for(int freqx = 0; freqx < samplingx; freqx++)
+                {
+                    int colDataUnit = colMCU * samplingx + freqx;
+
+                    for(int freqy = 0; freqy < samplingy; freqy++)
+                    {
+                        int rowDataUnit = rowMCU * samplingy + freqy;
+
+                    }
+                }
+            }
+
+        }
+
+    }
+
+
  }
 
  void reader::getNumMCU(SOF0 &sos, unsigned char mxSamplingX, unsigned char mxSamplingY, unsigned int &outMCUx, unsigned int &outMCUy)
