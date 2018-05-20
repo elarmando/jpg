@@ -332,17 +332,22 @@ void reader::read()
 
 
     this->readSOF0(this->_sof0);
-    this->readDHT(this->_dhts);
 
-    this->readSOS(this->_sos);
+
+
+
 
     uint2 nextMarker = 0;
     read2bytes(this->_stream, nextMarker);
 
     while(nextMarker != Markers::EOI){
-        this->readDHT(this->_dhts);
 
+        _stream.seekg(-2,std::ios_base::cur);
+
+        this->readDHT(this->_dhts);
         this->readSOS(this->_sos);
+
+        this->decode(this->_sof0, this->_sos, this->_dhts);
 
          read2bytes(this->_stream, nextMarker);
     }
@@ -352,34 +357,55 @@ void reader::read()
 
 }
 
- void reader::decode(SOF0 &sos )
+
+
+ void reader::decode(SOF0 &sof, SOS &sos, vector<DHT> &dht )
  {
      unsigned char maxSamplingH = 0;
      unsigned char maxSamplingV = 0;
-     unsigned char numComponents = sos.components.size();
-     uint2 width = sos.width;
-     uint2 height = sos.height;
+     unsigned char numComponents = sof.components.size();
+     uint2 width = sof.width;
+     uint2 height = sof.height;
 
-    this->getMaxSampling(sos, maxSamplingH, maxSamplingV);
+    this->getMaxSampling(sof, maxSamplingH, maxSamplingV);
 
     unsigned int numMCUx = 0;
     unsigned int numMCUy = 0;
 
-    this->getNumMCU(sos, maxSamplingH, maxSamplingV, numMCUx, numMCUy);
+    this->getNumMCU(sof, maxSamplingH, maxSamplingV, numMCUx, numMCUy);
+
+    std::vector<ComponentSOF> components;
+
+    components.resize(sof.components.size() + 1);
+
+    for(auto it = sof.components.begin(); it != sof.components.end(); ++it){
+        auto c = (*it);
+
+
+        components[c.identifier] = c;
+    }
 
 
 
+    auto &compDesc = sos.componentDescriptors;
 
     //decode each data unit in the mcu, for each component
-    for(int colMCU = 0; colMCU < numMCUx; colMCU++){
+    for(unsigned int colMCU = 0; colMCU < numMCUx; colMCU++){
 
-        for(int rowMCU = 0; rowMCU < numMCUy; rowMCU++){
+        for(unsigned int rowMCU = 0; rowMCU < numMCUy; rowMCU++){
 
-            for(auto it = sos.components.begin(); it != sos.components.end(); ++it)
+            for(auto it = compDesc.begin(); it != compDesc.end(); ++it)
             {
-                auto component = (*it);
+                auto des = (*it);
+                auto component = components[des.componentIdentifier];
                 int samplingx = component.horizontalSampling;
                 int samplingy = component.verticalSampling;
+
+                DHT *acTable = findTable(des.dcHuffmanTable, dht, true);
+                DHT *dcTable = findTable(des.acHuffmanTable, dht, false);
+
+                if(acTable == nullptr || dcTable == nullptr)
+                    throw std::logic_error("can't find DHT tables");
 
 
                 for(int freqx = 0; freqx < samplingx; freqx++)
@@ -389,6 +415,15 @@ void reader::read()
                     for(int freqy = 0; freqy < samplingy; freqy++)
                     {
                         int rowDataUnit = rowMCU * samplingy + freqy;
+
+
+
+                        //descomprimir coeficiente AC
+                        //obtener tabla huffman que corresponde a el coeficiente aC
+                        //de la seccion DHT sacar la lista con la cuenta de los tamaños de los codigos huffman
+                        //tambien sacar la lista de valores huffman
+                        //usar read stream para obtener el codigo ac
+
 
                     }
                 }
@@ -400,6 +435,33 @@ void reader::read()
 
 
  }
+
+ DHT* reader::findTable(char idTable, vector<DHT> &tables, bool isdctable)
+ {
+     bool findDc = isdctable;
+
+     char classNum = findDc ? 0 : 1;
+
+    for(size_t i = tables.size() - 1; i >= 0; i--){
+        auto table = tables[i];
+
+        if(idTable == table.identifier && table.classNum == classNum){
+             DHT* res = &table;
+            return res;
+        }
+
+
+
+    }
+
+     return nullptr;
+ }
+
+
+void reader::decodeCoeficient(SOS &scan, DHT &dht)
+{
+
+}
 
  void reader::getNumMCU(SOF0 &sos, unsigned char mxSamplingX, unsigned char mxSamplingY, unsigned int &outMCUx, unsigned int &outMCUy)
  {

@@ -127,6 +127,11 @@ private:
 
     void getMaxSampling(SOF0 &sos, unsigned char &horizontal, unsigned char &vertical);
     void getNumMCU(SOF0 &sos, unsigned char mxSamplingX, unsigned char mxSamplingY, unsigned int &outMCUx, unsigned int &outMCUy);
+    void decodeCoeficient(SOS &scan, DHT &dht);
+
+    DHT* findTable(char idTable, vector<DHT> &table, bool isdctable);
+
+
 public:
     reader(const std::string &a);
     ~reader();
@@ -137,7 +142,7 @@ public:
 
     void readTable();
     void read2bytes(std::istream &, uint2 &outbytes);
-    void decode(SOF0 &sos );
+    void decode(SOF0 &sos, SOS &scan, vector<DHT> &dht );
 };
 
 
