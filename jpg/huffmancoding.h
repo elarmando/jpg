@@ -6,6 +6,8 @@
 
 using namespace std;
 
+namespace jpg{
+
 
 
 class HuffmanSymbol{
@@ -50,10 +52,14 @@ public:
     void generateCodes(HuffmanSymbol &simbols);
     void generateCodes();
 
+
+
     int readBit(unsigned long indexBit, vector<char> &stream);
 
     //void huffman
     void readStream(std::vector<char> &countHuffman, std::vector<char> &values, std::vector<char> stream, vector<char> &outStream);
 };
+
+}
 
 #endif // HUFFMANCODING_H

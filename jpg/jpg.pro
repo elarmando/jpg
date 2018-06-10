@@ -6,10 +6,14 @@ CONFIG -= qt
 SOURCES += main.cpp \
     markers.cpp \
     reader.cpp \
-    huffmancoding.cpp
+    huffmancoding.cpp \
+    componentdecoder.cpp \
+    bitreader.cpp
 
 HEADERS += \
     markers.h \
     reader.h \
-    huffmancoding.h
+    huffmancoding.h \
+    componentdecoder.h \
+    bitreader.h
 

@@ -129,7 +129,7 @@ private:
     void getNumMCU(SOF0 &sos, unsigned char mxSamplingX, unsigned char mxSamplingY, unsigned int &outMCUx, unsigned int &outMCUy);
     void decodeCoeficient(SOS &scan, DHT &dht);
 
-    DHT* findTable(char idTable, vector<DHT> &table, bool isdctable);
+    size_t findTable(char idTable, vector<DHT> &table, bool isdctable);
 
 
 public:

@@ -10,7 +10,7 @@
 
 using namespace std;
 
-
+namespace  jpg{
 HuffmanSymbol::HuffmanSymbol(char _symbol, int _codeLength):
 
 symbol(_symbol),
@@ -185,8 +185,6 @@ void HuffmanCoding::generateCodes(vector<HuffmanSymbol> &codelen, bool order )
             huffmancodecounter = huffmancodecounter << 1;
             codelengthcounter++;
         }
-
-
     }
 
 }
@@ -215,30 +213,25 @@ void HuffmanCoding::generateCodeLengthsFromCounts(vector<char> &counts, vector<H
         }
     }
 
-
-
-
-
-
-
-
 }
+
+
+
 void HuffmanCoding::readStream(std::vector<char> &countHuffman, std::vector<char> &values, std::vector<char> stream, vector<char> &outStream){
 
-    std::vector<HuffmanSymbol> simbols;
+   vector<HuffmanSymbol> simbols;
 
+   for(size_t i = 0; i < countHuffman.size(); i++){
+       size_t count = (unsigned char)countHuffman[i];
 
-    for(size_t i = 0; i < simbols.size(); i++){
-        size_t count = (unsigned char)countHuffman[i];
+       for(size_t j = 0; j < count; j++){
+               HuffmanSymbol symbol;
+               symbol.codeLength = i + 1;
+               simbols.push_back(symbol);
+       }
+   }
 
-        for(size_t j = 0; j < count; j++){
-                HuffmanSymbol symbol;
-                symbol.codeLength = i + 1;
-                simbols.push_back(symbol);
-        }
-    }
-
-    this->generateCodes(simbols, false);
+   this->generateCodes(simbols, false);
 
     std::vector<int> maxCode, minCode, firstIndexVal;
     maxCode.resize(countHuffman.size());
@@ -343,3 +336,6 @@ void HuffmanCoding::generateCodes(){
 }
 
 
+
+
+}

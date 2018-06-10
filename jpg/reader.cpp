@@ -5,6 +5,9 @@
 #include <fstream>
 #include <stdexcept>
 
+#include "bitreader.h"
+#include "componentdecoder.h"
+
 namespace jpg{
 
 DQT::DQT(){
@@ -386,6 +389,7 @@ void reader::read()
     }
 
 
+    BitReader bitreader(&(sos.dataScan));
 
     auto &compDesc = sos.componentDescriptors;
 
@@ -401,11 +405,12 @@ void reader::read()
                 int samplingx = component.horizontalSampling;
                 int samplingy = component.verticalSampling;
 
-                DHT *acTable = findTable(des.dcHuffmanTable, dht, true);
-                DHT *dcTable = findTable(des.acHuffmanTable, dht, false);
+                size_t iactable = findTable(des.acHuffmanTable, dht, true);
+                size_t idctable = findTable(des.dcHuffmanTable, dht, false);
 
-                if(acTable == nullptr || dcTable == nullptr)
-                    throw std::logic_error("can't find DHT tables");
+
+                ComponentDecoder ac(dht[iactable]);
+               //ComponentDecoder dc(&(dcTable->countHuffmanCodes), dcTable->symbols);
 
 
                 for(int freqx = 0; freqx < samplingx; freqx++)
@@ -416,7 +421,7 @@ void reader::read()
                     {
                         int rowDataUnit = rowMCU * samplingy + freqy;
 
-
+                        char acCoefficient = ac.decodeNext(bitreader);
 
                         //descomprimir coeficiente AC
                         //obtener tabla huffman que corresponde a el coeficiente aC
@@ -436,7 +441,7 @@ void reader::read()
 
  }
 
- DHT* reader::findTable(char idTable, vector<DHT> &tables, bool isdctable)
+ size_t reader::findTable(char idTable, vector<DHT> &tables, bool isdctable)
  {
      bool findDc = isdctable;
 
@@ -446,15 +451,14 @@ void reader::read()
         auto table = tables[i];
 
         if(idTable == table.identifier && table.classNum == classNum){
-             DHT* res = &table;
-            return res;
+            return i;
         }
 
 
 
     }
 
-     return nullptr;
+     throw std::logic_error("Could not find Huffman table");
  }
 
 
