@@ -19,6 +19,7 @@ public:
     BitReader(const vector<char>* const buffer);
 
     char readNexBit();
+    unsigned char readBits(unsigned char numberOfBits);
 };
 }
 #endif // BITREADER_H

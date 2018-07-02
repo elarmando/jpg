@@ -23,10 +23,16 @@ private:
     void generateSymbols( vector<char> *counts);
     void generateCodes(vector<HuffmanSymbol> &, bool order = false);
     void findMinMax();
+
+
+
 public:
     ComponentDecoder(DHT &huffmanTable);
     ~ComponentDecoder();
+
+    char decodeDC(BitReader &reader);
     char decodeNext(BitReader &reader);
+    int extend(unsigned char additional, unsigned char magnitude);
 
 };
 }

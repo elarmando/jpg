@@ -157,4 +157,24 @@ void ComponentDecoder::findMinMax()
 
 }
 
+char ComponentDecoder::decodeDC(BitReader &reader)
+{
+    auto magnitude = this->decodeNext(reader);
+
+}
+
+int ComponentDecoder::extend(unsigned char additional, unsigned char magnitude)
+{
+    unsigned char vt = 1 << (magnitude - 1);
+
+    if(additional < vt){
+        int vv = ( -1 << magnitude ) + 1;
+        return additional + vv;
+
+    }else{
+        return additional;
+    }
+
+}
+
 }

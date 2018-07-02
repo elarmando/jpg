@@ -410,7 +410,7 @@ void reader::read()
 
 
                 ComponentDecoder ac(dht[iactable]);
-               //ComponentDecoder dc(&(dcTable->countHuffmanCodes), dcTable->symbols);
+                ComponentDecoder dc(dht[idctable]);
 
 
                 for(int freqx = 0; freqx < samplingx; freqx++)
@@ -421,7 +421,10 @@ void reader::read()
                     {
                         int rowDataUnit = rowMCU * samplingy + freqy;
 
-                        char acCoefficient = ac.decodeNext(bitreader);
+                        unsigned char magnitude = dc.decodeNext(bitreader);
+                        //unsigned char
+
+
 
                         //descomprimir coeficiente AC
                         //obtener tabla huffman que corresponde a el coeficiente aC
