@@ -7,6 +7,7 @@ namespace jpg{
 ComponentDecoder::ComponentDecoder(DHT &dht):
  _values(dht.symbols)
 {
+    this->_lastDc = 0;
 
     std::cout<<dht.countHuffmanCodes.size()<<std::endl;
 
@@ -159,7 +160,15 @@ void ComponentDecoder::findMinMax()
 
 char ComponentDecoder::decodeDC(BitReader &reader)
 {
-    auto magnitude = this->decodeNext(reader);
+    unsigned char magnitude = this->decodeNext(reader);
+    auto additional = reader.readBits(magnitude);
+
+    auto difference = this->extend(additional, magnitude);
+
+    auto dc = difference - this->_lastDc;
+    this->_lastDc = dc;
+
+    return dc;
 
 }
 

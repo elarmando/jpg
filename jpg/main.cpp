@@ -48,10 +48,15 @@ void tests(){
 
 int main()
 {
-//    jpg::reader reader("test.jpg");
-//    reader.read();
+    jpg::reader reader("test.jpg");
+    reader.read();
 
-    tests();
+    //tests();
+
+    char e = -56;
+    unsigned char e2 = e;
+
+    std::cout<<e2;
 
     return 0;
 }

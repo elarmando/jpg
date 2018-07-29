@@ -19,6 +19,8 @@ private:
     vector<int> _min;
     vector<int> _firstIndex;
 
+    int _lastDc;
+
     void generateTables();
     void generateSymbols( vector<char> *counts);
     void generateCodes(vector<HuffmanSymbol> &, bool order = false);

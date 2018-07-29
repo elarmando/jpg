@@ -421,7 +421,7 @@ void reader::read()
                     {
                         int rowDataUnit = rowMCU * samplingy + freqy;
 
-                        unsigned char magnitude = dc.decodeNext(bitreader);
+                        //auto dcCoef = dc.decodeDC(bitreader);
                         //unsigned char
 
 
