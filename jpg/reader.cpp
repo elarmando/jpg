@@ -184,11 +184,12 @@ void reader::readSOS(SOS &sos)
     sos.componentDescriptors.resize(sos.componentCount);
 
     for(char i = 0; i < sos.componentCount; i++){
-        SOSComponentDescriptor descriptor;
+		
           char descriptor1 = 0, descriptor2 = 0;
           _stream.read(&descriptor1, 1);
           _stream.read(&descriptor2, 1);
 
+		  SOSComponentDescriptor &descriptor = sos.componentDescriptors[i];
           descriptor.componentIdentifier  = descriptor1;
           descriptor.acHuffmanTable =  (descriptor2 & 0x0F);
           descriptor.dcHuffmanTable = (descriptor2 & 0xF0) >> 4;
@@ -401,12 +402,13 @@ void reader::read()
             for(auto it = compDesc.begin(); it != compDesc.end(); ++it)
             {
                 auto des = (*it);
-                auto component = components[des.componentIdentifier];
+				unsigned char id = (unsigned char)des.componentIdentifier;
+                auto component = components[id];
                 int samplingx = component.horizontalSampling;
                 int samplingy = component.verticalSampling;
 
-                size_t iactable = findTable(des.acHuffmanTable, dht, true);
-                size_t idctable = findTable(des.dcHuffmanTable, dht, false);
+                size_t iactable = findTable(des.acHuffmanTable, dht, false);
+                size_t idctable = findTable(des.dcHuffmanTable, dht, true);
 
 
                 ComponentDecoder ac(dht[iactable]);
@@ -421,7 +423,7 @@ void reader::read()
                     {
                         int rowDataUnit = rowMCU * samplingy + freqy;
 
-                        //auto dcCoef = dc.decodeDC(bitreader);
+                        auto dcCoef = dc.decodeDC(bitreader);
                         //unsigned char
 
 

@@ -9,12 +9,6 @@ ComponentDecoder::ComponentDecoder(DHT &dht):
 {
     this->_lastDc = 0;
 
-    std::cout<<dht.countHuffmanCodes.size()<<std::endl;
-
-    std::vector<char> p;
-
-    p.push_back('a');
-
     this->generateSymbols(&(dht.countHuffmanCodes));
 
     this->_max.resize(dht.countHuffmanCodes.size());
@@ -35,13 +29,13 @@ char ComponentDecoder::decodeNext(BitReader &reader)
     int indexValue = -1;
 
 
-    for(int codelen = 1; codelen <= 16; codelen++){
+    for(int codelen = 0; codelen < 16; codelen++){
         //read next bit in stream
         char newBit = reader.readNexBit();
 
-
+		
         code = code << 1;
-        code = code || newBit;
+        code = code | newBit;
 
 
         if(code <= _max[codelen]){
@@ -67,10 +61,6 @@ void ComponentDecoder::generateTables()
 
 void ComponentDecoder::generateSymbols(vector<char> *countsHuffman)
 {
-
-    cout<<"hola";
-    cout<<countsHuffman->size()<<std::endl;
-
         for(size_t i = 0; i < countsHuffman->size(); i++){
             size_t count = (unsigned char)(*countsHuffman)[i];
 
@@ -82,7 +72,6 @@ void ComponentDecoder::generateSymbols(vector<char> *countsHuffman)
         }
 
         this->generateCodes(_symbols, false);
-
 
 }
 
@@ -130,7 +119,7 @@ void ComponentDecoder::findMinMax()
         int numSymbolsByLen = 0;
         int firstIndex = -1;
 
-        while(this->_symbols[indexSimbol].codeLength == len){
+		while (indexSimbol < this->_symbols.size() && this->_symbols[indexSimbol].codeLength == len){
 
             if(firstIndex == -1)
                 firstIndex = indexSimbol;
