@@ -34,6 +34,7 @@ public:
 
     char decodeDC(BitReader &reader);
     char decodeNext(BitReader &reader);
+	char decodeAC(char dc, BitReader &reader);
     int extend(unsigned char additional, unsigned char magnitude);
 
 };

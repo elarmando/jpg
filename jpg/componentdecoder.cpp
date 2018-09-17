@@ -175,4 +175,53 @@ int ComponentDecoder::extend(unsigned char additional, unsigned char magnitude)
 
 }
 
+char ComponentDecoder::decodeAC(char dc, BitReader &reader)
+{	
+	const std::size_t size = 64;
+
+	const unsigned int zigZagInput[size] =
+	{
+		0, 1, 8, 16, 9, 2, 3, 10,
+		17, 24, 32, 25, 18, 11, 4, 5,
+		12, 19, 26, 33, 40, 48, 41, 34,
+		27, 20, 13, 6, 7, 14, 21, 28,
+		35, 42, 49, 56, 57, 50, 43, 36,
+		29, 22, 15, 23, 30, 37, 44, 51,
+		58, 59, 52, 45, 38, 31, 39, 46,
+		53, 60, 61, 54, 47, 55, 62, 63
+	};
+	char coef[size];
+
+	for (auto j = 0; j < size; j++)
+		coef[j] = 0;
+	
+
+	coef[0] = dc;
+
+	std::size_t i = 1;
+
+	while (i < size){
+		unsigned char ac = this->decodeNext(reader);
+		unsigned char zeroCount = ac >> 4;
+		unsigned char magnitude = ac & 0xF;
+
+		if (ac == 0x00)
+			i = 64;//if 0x00 all remaining are 0, finish loop
+		else if (ac == 0xF0)
+			i += 16;//next sixteen are 0
+		else{
+			i = i + zeroCount;//skipped zeros
+
+			auto readBits = reader.readBits(magnitude);
+			auto coefAc = this->extend(readBits, magnitude);
+			auto pos = zigZagInput[i];
+
+			coef[pos] = (char)coefAc;
+			i = i + 1;
+		}
+	}
+
+}
+
+
 }

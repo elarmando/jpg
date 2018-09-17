@@ -337,10 +337,6 @@ void reader::read()
 
     this->readSOF0(this->_sof0);
 
-
-
-
-
     uint2 nextMarker = 0;
     read2bytes(this->_stream, nextMarker);
 
@@ -353,7 +349,7 @@ void reader::read()
 
         this->decode(this->_sof0, this->_sos, this->_dhts);
 
-         read2bytes(this->_stream, nextMarker);
+        this->read2bytes(this->_stream, nextMarker);
     }
 
 
@@ -423,7 +419,10 @@ void reader::read()
                     {
                         int rowDataUnit = rowMCU * samplingy + freqy;
 
+						
+
                         auto dcCoef = dc.decodeDC(bitreader);
+						ac.decodeAC(dcCoef, bitreader);
                         //unsigned char
 
 
