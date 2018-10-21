@@ -175,7 +175,7 @@ int ComponentDecoder::extend(unsigned char additional, unsigned char magnitude)
 
 }
 
-char ComponentDecoder::decodeAC(char dc, BitReader &reader)
+void ComponentDecoder::decodeAC(char dc, BitReader &reader, std::vector<char> &coef)
 {	
 	const std::size_t size = 64;
 
@@ -190,7 +190,8 @@ char ComponentDecoder::decodeAC(char dc, BitReader &reader)
 		58, 59, 52, 45, 38, 31, 39, 46,
 		53, 60, 61, 54, 47, 55, 62, 63
 	};
-	char coef[size];
+
+	coef.resize(64);	
 
 	for (auto j = 0; j < size; j++)
 		coef[j] = 0;

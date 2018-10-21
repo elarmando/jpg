@@ -14,6 +14,30 @@ DQT::DQT(){
 
 }
 
+void DQT::dequantize(std::vector<char> &coeffs, std::vector<double> &outCoeffs)
+{
+	
+	int valueSize = (this->table.size() < 65) ? 1 : 2;
+
+	outCoeffs.resize(coeffs.size());
+
+	for (size_t i = 0; i < coeffs.size(); i++)
+	{
+		size_t itable = i * valueSize;
+
+		double value = 0;
+
+		if (valueSize == 1)
+			value = this->table[itable];
+		else
+			value = ((unsigned int)this->table[itable] << 8) + (unsigned char) this->table[itable + 1];
+
+
+		outCoeffs[i] = (unsigned char)coeffs[i] * (unsigned char)value;
+	}
+
+}
+
 ComponentSOF::ComponentSOF(){}
 
 SOF0::SOF0(){}
@@ -111,7 +135,7 @@ void reader::readSequenceOfDQT(std::vector<DQT> &dqts, bool skipmarker)
 
 }
 
-void reader::readDQT(std::vector<DQT> dqts)
+void reader::readDQT(std::vector<DQT> &dqts)
 {
     uint2 marker = 0;
 
@@ -345,9 +369,10 @@ void reader::read()
         _stream.seekg(-2,std::ios_base::cur);
 
         this->readDHT(this->_dhts);
+		this->readDQT(this->_dqts);
         this->readSOS(this->_sos);
 
-        this->decode(this->_sof0, this->_sos, this->_dhts);
+		this->decode(this->_sof0, this->_sos, this->_dhts, this->_dqts);
 
         this->read2bytes(this->_stream, nextMarker);
     }
@@ -359,7 +384,7 @@ void reader::read()
 
 
 
- void reader::decode(SOF0 &sof, SOS &sos, vector<DHT> &dht )
+ void reader::decode(SOF0 &sof, SOS &sos, vector<DHT> &dht, vector<DQT> &dqt )
  {
      unsigned char maxSamplingH = 0;
      unsigned char maxSamplingV = 0;
@@ -406,9 +431,13 @@ void reader::read()
                 size_t iactable = findTable(des.acHuffmanTable, dht, false);
                 size_t idctable = findTable(des.dcHuffmanTable, dht, true);
 
+				size_t idqt = findDQT(component.quantizationIdentifier, dqt);
+
 
                 ComponentDecoder ac(dht[iactable]);
                 ComponentDecoder dc(dht[idctable]);
+
+				DQT &actualDqt = dqt[idqt];
 
 
                 for(int freqx = 0; freqx < samplingx; freqx++)
@@ -422,10 +451,14 @@ void reader::read()
 						
 
                         auto dcCoef = dc.decodeDC(bitreader);
-						ac.decodeAC(dcCoef, bitreader);
+						std::vector<char> coeffs;
+
+						ac.decodeAC(dcCoef, bitreader, coeffs);
                         //unsigned char
 
+						std::vector<double> dequanCoeffs;
 
+						actualDqt.dequantize(coeffs, dequanCoeffs);
 
                         //descomprimir coeficiente AC
                         //obtener tabla huffman que corresponde a el coeficiente aC
@@ -463,6 +496,17 @@ void reader::read()
     }
 
      throw std::logic_error("Could not find Huffman table");
+ }
+
+ size_t reader::findDQT(char id, vector<DQT> &tbls)
+ {
+	 for (auto i = 0; i < tbls.size(); i++)
+	 {
+		 if (tbls[i].identifier == i)
+			 return i;
+	 }
+
+	 throw std::logic_error("Could not find Huffman table");
  }
 
 
@@ -622,6 +666,7 @@ DHT::DHT()
 {
 
 }
+
 
 
 }

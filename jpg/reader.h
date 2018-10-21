@@ -21,6 +21,8 @@ public:
     char identifier;
     char size;
     std::vector<char> table;
+
+	void dequantize(std::vector<char> &coeffs, std::vector<double> &outCoeffs);
 };
 
 
@@ -115,7 +117,7 @@ private:
 
     void skipAppMarkers();
     void readSequenceOfDQT(std::vector<DQT> &dqts, bool skipmarker = false);
-    void readDQT(std::vector<DQT> dqts);
+    void readDQT(std::vector<DQT> &dqts);
 
     void readSOF0(SOF0 &sof0);
     void readSOS(SOS &sos);
@@ -130,6 +132,7 @@ private:
     void decodeCoeficient(SOS &scan, DHT &dht);
 
     size_t findTable(char idTable, vector<DHT> &table, bool isdctable);
+	size_t findDQT(char id, vector<DQT> &tbls);
 
 
 public:
@@ -142,7 +145,7 @@ public:
 
     void readTable();
     void read2bytes(std::istream &, uint2 &outbytes);
-    void decode(SOF0 &sos, SOS &scan, vector<DHT> &dht );
+    void decode(SOF0 &sos, SOS &scan, vector<DHT> &dht, vector<DQT> &dqt );
 };
 
 

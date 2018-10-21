@@ -34,7 +34,7 @@ public:
 
     char decodeDC(BitReader &reader);
     char decodeNext(BitReader &reader);
-	char decodeAC(char dc, BitReader &reader);
+	void decodeAC(char dc, BitReader &reader, std::vector<char> &coefficients);
     int extend(unsigned char additional, unsigned char magnitude);
 
 };
